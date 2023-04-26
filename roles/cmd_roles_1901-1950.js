@@ -698,6 +698,21 @@ module.exports = (g) =>
 		e.addField("Goal:", "Obliterate the opposition.");
 	});
 
+	register_role(["harry_s_truman", "harrystruman", "harry", "truman", "hst", "1946"], "Town", "Harry S. Truman", {subCat: "Power"}, (e) =>
+	{
+		e.setDescription("Post 1946\n*I never gave anybody hell! I just told the truth and they thought it was hell.*");
+
+		e.addField("Alignment", "Town Power", true);
+		e.addField("Attack", "\"Yes\"", true);
+		e.addField("Defense", "None", true);
+
+		e.addField("Abilities:", "- Drop an atomic bomb on the Town. This will eradicate all enemies of the Town in one fell swoop. All Town members and any other players that have achieved their wincon instantly win the game. This ability does not kill anyone except players that are strictly anti-Town.");
+
+		e.addField("Attributes:", "- You may not use your ability until Night 6.");
+
+		e.addField("Goal:", "Obliterate the opposition.");
+	});
+
 	register_role(["axolotl", "axo", "1947"], "Faunae", "Axolotl", {subCat: "Predator"}, (e) =>
 	{
 		e.setDescription("Post 1947");

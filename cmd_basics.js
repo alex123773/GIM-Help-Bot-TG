@@ -309,7 +309,7 @@ module.exports = (g) =>
 
 	register_cmd("ping", "", "Ping", "Debug; Send a signal to the bot and recieve a response.", (chn) =>
 	{
-		UTILS.msg(chn, "+Pong!");
+		UTILS.msg(chn, "+Pongg!");
 	});
 
 	register_cmd("overwrite", "", "Overwrite", "Manually write current data to internal storage.", {adminOnly: true}, (chn) =>

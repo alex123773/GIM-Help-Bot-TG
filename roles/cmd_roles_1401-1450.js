@@ -667,6 +667,36 @@ module.exports = (g) =>
 		e.addField("Goal:", "Survive to the end of the game, while having killed less than five people.");
 	});
 
+	register_role(["abominationtheoneduwiiwontshutupabout", "abomination", "atodwsua", "shutupduwii", "1445"], "Neutral", "Abomination (The One Duwii Won't Shut Up About)", {subCat: "Chaos"}, (e) =>
+	{
+		e.setDescription("Post 1445\n*Tortured and reclusive... this man is more dangerous than he seems...*");
+
+		e.addField("Alignment", "Neutral Chaos", true);
+		e.addField("Attack", "Powerful", true);
+		e.addField("Defense", "Powerful", true);
+
+		e.addField("Abilities:", "- Ignore someone each night.");
+
+		e.addField("Attributes:", "- When you ignore someone, you will not be able to gain stress from them for the night.\n- You have a stress meter which goes up to 10.\n- You will be notified of where your stress meter is at the end of each night.\n- When you are visited, you gain 2 stress, and gain one additional stress if you were roleblocked, attacked, investigated, or controlled.\n- If your stress meter ever reaches ten, you will rampage at your own house.‎");
+
+		e.addField("Goal:", "Survive to the end of the game, while having killed less than five people.");
+	});
+
+	register_role(["abominationtheoneduwiiwontshutupabout", "abomination", "atodwsua", "shutupduwii", "1446"], "Neutral", "Abomination (The One Duwii Won't Shut Up About)", {subCat: "Chaos"}, (e) =>
+	{
+		e.setDescription("Post 1446\n*Tortured and reclusive... this man is more dangerous than he seems...*");
+
+		e.addField("Alignment", "Neutral Chaos", true);
+		e.addField("Attack", "Powerful", true);
+		e.addField("Defense", "Powerful", true);
+
+		e.addField("Abilities:", "- Ignore someone each night.");
+
+		e.addField("Attributes:", "- When you ignore someone, you will not be able to gain stress from them for the night.\n- You have a stress meter which goes up to 10.\n- You will be notified of where your stress meter is at the end of each night.\n- When you are visited, you gain 2 stress, and gain one additional stress if you were roleblocked, attacked, investigated, or controlled.\n- If your stress meter ever reaches ten, you will rampage at your own house.‎");
+
+		e.addField("Goal:", "Survive to the end of the game, while having killed less than five people.");
+	});
+
 	register_role(["dry_bones", "drybones", "db", "1447"], "Koopa", "Dry Bones", {subCat: "Protective"}, (e) =>
 	{
 		e.setDescription("Post 1447");
@@ -685,6 +715,21 @@ module.exports = (g) =>
 	register_role(["myling", "1448"], "Spirit", "Myling", {subCat: "Killing"}, (e) =>
 	{
 		e.setDescription("Post 1448");
+
+		e.addField("Alignment", "Spirit Killing", true);
+		e.addField("Attack", "Faction Variable", true);
+		e.addField("Defense", "Faction Variable", true);
+
+		e.addField("Abilities:", "- Check a player to see if they were your murderer. If they are, attack the player.");
+
+		e.addField("Attributes:", "- At the beginning of the game, two players will have been assigned to be your murderer, but you will only know their roles.\n- Once you kill both of these players, you may attack twice per night and you are able to kill anyone.");
+
+		e.addField("Goal:", factions.Spirit.goal);
+	});
+
+	register_role(["myling", "1449"], "Spirit", "Myling", {subCat: "Killing"}, (e) =>
+	{
+		e.setDescription("Post 1449");
 
 		e.addField("Alignment", "Spirit Killing", true);
 		e.addField("Attack", "Faction Variable", true);

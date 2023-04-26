@@ -23,6 +23,14 @@ const SERVER_DATA = {};
 function toggle_day(id)
 {
 	SERVER_DATA[id].day = !SERVER_DATA[id].day;
+	pdata = SERVER_DATA[id].players;
+	let players = (Object.keys(pdata));
+	for(let i = players.length-1; i >= 0; i--) {
+		let player =  pdata[players[i]];
+		player.votes = {};
+	}
+
+
 }
 
 function is_day(id)
@@ -30,12 +38,13 @@ function is_day(id)
 	return SERVER_DATA[id].day;
 }
 
-const FNAME = ".store.json";
+const FNAME = "/Users/Alexk/Downloads/code/whisper-bot/GIM-Help-Bot-TG/example.store.json";
 const FNAME2 = ".backup.json";
 var TOKEN;
 readFile(FNAME, (err, data) =>
 {
 	if(err) throw err;
+	//if(err) return;
 
 	let store = JSON.parse(data);
 

@@ -133,7 +133,8 @@ module.exports = (g) =>
 						channel: player_channel.id,
 						nicknames,
 						alive: true,
-						tags: {}
+						tags: {},
+						votes: {}
 					};
 
 					if(defaults)
@@ -152,6 +153,216 @@ module.exports = (g) =>
 			UTILS.msg(chn, "+Player " + (num+1) + " registered successfully!");
 		});
 	});
+
+	register_cmd(["vote"], "<Player Name or Number>", "Vote for a player to be eliminated.", {adminOnly: false, minArgs: 1}, (chn, message, e, args) =>
+	{
+		let pdata = SERVER_DATA[message.guild.id].players;
+		let sender = UTILS.getPlayerByID(pdata, message.member.id);
+
+		if(!sender)
+		{
+			UTILS.msg(chn, "-ERROR: You are not a registered player!");
+			return;
+		}
+
+		if(chn.id !== sender.channel)
+		{
+			UTILS.msg(chn, "-ERROR: You may only send votes from within your own Player Channel.");
+			return;
+		}
+
+		if(!sender.alive)
+		{
+			UTILS.msg(chn, "-ERROR: You cannot vote while dead.");
+			return;
+		}
+
+		if(!is_day(message.guild.id))
+		{
+			UTILS.msg(chn, "-ERROR: You cannot vote right now.");
+			return;
+		}
+
+		let recipient = UTILS.isInt(args[0])
+			&& pdata[parseInt(args[0])-1]
+			|| getPlayerByName(pdata, args[0]);
+
+		let redirected = {};
+		if(recipient)
+			redirected[recipient.num] = true;
+
+		while(recipient && recipient.tags.redirect && !redirected[recipient.tags.redirect])
+		{
+			recipient = pdata[parseInt(recipient.tags.redirect)-1];
+			redirected[recipient.num] = true;
+		}
+
+		if(!recipient)
+		{
+			UTILS.msg(chn, "-ERROR: Player \"" + args[0] + "\" is not valid.");
+			return;
+		}
+
+		if(sender === recipient)
+		{
+			UTILS.msg(chn, "-ERROR: You cannot vote for yourself.");
+			return;
+		}
+
+		if(!recipient.alive)
+		{
+			UTILS.msg(chn, "-ERROR: Player \"" + args[0] + "\" is dead.");
+			return;
+		}
+
+		if(!recipient.votes)
+			recipient.votes = {};
+
+		for (let i = 0; i < pdata.length; i++) {
+			let curr = pdata[i];
+			delete curr.votes[sender.id.toString()];
+		}
+
+		recipient.votes[sender.id] = 1;
+
+		UTILS.msg(chn, "+Voted!");
+
+
+		if(sender.tags.announce)
+		{
+			let announce = message.guild.channels.cache.get(sender.tags.announce.substring(2, sender.tags.announce.length-1))
+
+			if(announce)
+				UTILS.msg(announce, firstname(sender) + " voted for " + firstname(recipient) + ".", true);
+			else
+				UTILS.msg(chn, "-ERROR: Invalid Announce Channel.");
+		}
+
+	});
+
+	register_cmd(["unvote"], "", "Remove your vote for a player to be eliminated.", {adminOnly: false, minArgs: 0}, (chn, message, e, args) => {
+		let pdata = SERVER_DATA[message.guild.id].players;
+		let sender = UTILS.getPlayerByID(pdata, message.member.id);
+
+		if (!sender) {
+			UTILS.msg(chn, "-ERROR: You are not a registered player!");
+			return;
+		}
+
+		if (chn.id !== sender.channel) {
+			UTILS.msg(chn, "-ERROR: You may only send votes from within your own Player Channel.");
+			return;
+		}
+
+		if (!sender.alive) {
+			UTILS.msg(chn, "-ERROR: You cannot vote while dead.");
+			return;
+		}
+
+		if (!is_day(message.guild.id)) {
+			UTILS.msg(chn, "-ERROR: You cannot vote right now.");
+			return;
+		}
+
+		let exists = false;
+		for (let i = 0; i < pdata.length; i++) {
+			let curr = pdata[i];
+			if (sender.id.toString() in curr.votes) {
+				exists = true;
+			}
+			delete curr.votes[sender.id.toString()];
+		}
+
+		if (exists) {
+			UTILS.msg(chn, "+Unvoted!");
+
+			if(sender.tags.announce)
+			{
+				let announce = message.guild.channels.cache.get(sender.tags.announce.substring(2, sender.tags.announce.length-1))
+
+				if(announce)
+					UTILS.msg(announce, firstname(sender) + " unvoted.", true);
+				else
+					UTILS.msg(chn, "-ERROR: Invalid Announce Channel.");
+			}
+
+		} else {
+			UTILS.msg(chn, "-ERROR: You were not previously voting anyone.");
+		}
+
+	});
+
+	register_cmd(["votecount"], "", "Get the current votecount.", {adminOnly: false, minArgs: 0}, (chn, message, e, args) =>
+	{
+		let pdata = SERVER_DATA[message.guild.id].players;
+		let sender = UTILS.getPlayerByID(pdata, message.member.id);
+		let announce = null;
+
+		if(!sender)
+		{
+			UTILS.msg(chn, "-ERROR: You are not a registered player!");
+			return;
+		}
+
+		if(sender.tags.announce)
+		{
+			announce = message.guild.channels.cache.get(sender.tags.announce.substring(2, sender.tags.announce.length-1));
+		}
+
+		if(chn.id !== sender.channel && (!announce || chn.id !== announce.id))
+		{
+			UTILS.msg(chn, "-ERROR: You may only ask for the votecount within your own Player Channel or the main channel.");
+			return;
+		}
+
+		if(!sender.alive)
+		{
+			UTILS.msg(chn, "-ERROR: You cannot vote while dead.");
+			return;
+		}
+
+		if(!is_day(message.guild.id))
+		{
+			UTILS.msg(chn, "-ERROR: You can only request the votecount during the day.");
+			return;
+		}
+
+
+		if(sender.tags.announce)
+		{
+			if(announce) {
+				let counts = "Current Votes:\n";
+				for (let i = 0; i < pdata.length; i++) {
+					let curr = pdata[i];
+					counts += firstname(curr);
+					counts += ": ";
+
+					let ct = 0;
+					let voters = " (";
+					for (let k in curr.votes) {
+						if (ct !== 0) {
+							voters += ", ";
+						}
+						ct += curr.votes[k];
+						voters += firstname(UTILS.getPlayerByID(pdata,k));
+					}
+					voters += ")";
+
+					counts += ct.toString() + voters;
+					counts += "\n";
+				}
+
+
+				UTILS.msg(announce, counts);
+			} else {
+				UTILS.msg(chn, "-ERROR: Invalid Announce Channel.");
+			}
+		}
+
+	});
+
+
+
 
 	register_cmd(["del_player", "delplayer"], "<Player Name or Number or *>", "Delete Player", "Remove a player from the bot's local storage.", {adminOnly: true, minArgs: 1}, (chn, message, e, args) =>
 	{
