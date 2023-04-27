@@ -223,7 +223,12 @@ module.exports = (g) =>
 			delete curr.votes[sender.id.toString()];
 		}
 
-		recipient.votes[sender.id] = 1;
+		if (sender.tags["extravotes"] || sender.tags["extravotes"] === 0) {
+			recipient.votes[sender.id] = parseInt(sender.tags["extravotes"], 10);
+		} else {
+			recipient.votes[sender.id] = 1;
+		}
+
 
 		UTILS.msg(chn, "+Voted!");
 
@@ -331,27 +336,50 @@ module.exports = (g) =>
 		if(sender.tags.announce)
 		{
 			if(announce) {
+				for (let i = 0; i < pdata.length; i++) {
+					let curr = pdata[i];
+
+					for (let k in curr.votes) {
+
+						let player = UTILS.getPlayerByID(pdata,k);
+
+						if (player.tags["extravotes"] || player.tags["extravotes"] === 0) {
+							curr.votes[k] = parseInt(player.tags["extravotes"], 10);
+						} else {
+							curr.votes[k] = 1;
+						}
+
+					}
+
+				}
+
+				let calive = 0;
 				let counts = "Current Votes:\n";
 				for (let i = 0; i < pdata.length; i++) {
 					let curr = pdata[i];
-					counts += firstname(curr);
-					counts += ": ";
+					if (curr.alive) {
+						calive++;
+						counts += firstname(curr);
+						counts += ": ";
 
-					let ct = 0;
-					let voters = " (";
-					for (let k in curr.votes) {
-						if (ct !== 0) {
-							voters += ", ";
+						let ct = 0;
+						let voters = " (";
+						for (let k in curr.votes) {
+							if (ct !== 0) {
+								voters += ", ";
+							}
+							ct += curr.votes[k];
+							voters += firstname(UTILS.getPlayerByID(pdata, k));
 						}
-						ct += curr.votes[k];
-						voters += firstname(UTILS.getPlayerByID(pdata,k));
-					}
-					voters += ")";
+						voters += ")";
 
-					counts += ct.toString() + voters;
-					counts += "\n";
+						counts += ct.toString() + voters;
+						counts += "\n";
+					}
 				}
 
+				let maj = Math.ceil((calive + 1) / 2);
+				counts += "Majority is currently " + maj.toString() + ".";
 
 				UTILS.msg(announce, counts);
 			} else {
@@ -491,10 +519,12 @@ module.exports = (g) =>
 
 		player.alive = !player.alive;
 
-		if(player.alive)
+		if(player.alive) {
 			UTILS.msg(chn, "+They live.");
-		else
+		} else {
 			UTILS.msg(chn, "-They die.");
+			player.votes = {};
+		}
 
 		overwrite();
 	});
@@ -771,6 +801,7 @@ module.exports = (g) =>
 		e.addField("redirect <Player No.>", "Whispers sent to the tagged player will instead be sent to the player with that Number. Overhearing and announcements will reveal the true recipient of the whispers. To prevent loops, a whisper can never be redirected to someone that it was already redirected away from.");
 		e.addField("relay <#channel>", "Target's sent whispers will be relayed to the provided channel, which ONLY includes the full message, NOT the sender or recipient.");
 		e.addField("relay_nick <Name>", "If present, the player with this tag will show up as that nickname when their messages and sent via relay channels. Their color and PFP will be removed as well. You can set per-channel nicknames using this format: `channelID:nickame,channelID:nickname`. Use commas to separate each nickname or channel-nickname pair, and colons to separate channel IDs from nicknames. You may have a nickname without a channelID specified, which will apply to all channels that don't have their own specific nickname.");
+		e.addField("extravotes <number>", "Tagged player's vote counts extra.");
 
 		UTILS.embed(chn, e);
 	});
