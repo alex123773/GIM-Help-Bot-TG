@@ -215,6 +215,12 @@ module.exports = (g) =>
 			return;
 		}
 
+		if(recipient.tags.purged)
+		{
+			UTILS.msg(chn, "-ERROR: You cannot vote for \"" + args[0] + "\" right now.");
+			return;
+		}
+
 		if(!recipient.votes)
 			recipient.votes = {};
 
@@ -223,8 +229,8 @@ module.exports = (g) =>
 			delete curr.votes[sender.id.toString()];
 		}
 
-		if (sender.tags["extravotes"] || sender.tags["extravotes"] === 0) {
-			recipient.votes[sender.id] = parseInt(sender.tags["extravotes"], 10);
+		if (sender.tags.extravotes || sender.tags.extravotes === 0) {
+			recipient.votes[sender.id] = parseInt(sender.tags.extravotes, 10);
 		} else {
 			recipient.votes[sender.id] = 1;
 		}
@@ -343,12 +349,17 @@ module.exports = (g) =>
 
 						let player = UTILS.getPlayerByID(pdata,k);
 
-						if (player.tags["extravotes"] || player.tags["extravotes"] === 0) {
-							curr.votes[k] = parseInt(player.tags["extravotes"], 10);
+						if (player.tags.extravotes || player.tags.extravotes === 0) {
+							curr.votes[k] = parseInt(player.tags.extravotes, 10);
 						} else {
 							curr.votes[k] = 1;
 						}
 
+
+					}
+
+					if (curr.tags.purged) {
+						curr.votes = {};
 					}
 
 				}
@@ -707,8 +718,7 @@ module.exports = (g) =>
 			if(!player)
 			{
 				UTILS.msg(chn, "-ERROR: Player \"" + (args[0] === "*" ? players[i] : args[0]) + "\" is not valid.");
-				continue;
-			}
+				continue}
 
 			if(!player.tags)
 				player.tags = {};
@@ -802,6 +812,7 @@ module.exports = (g) =>
 		e.addField("relay <#channel>", "Target's sent whispers will be relayed to the provided channel, which ONLY includes the full message, NOT the sender or recipient.");
 		e.addField("relay_nick <Name>", "If present, the player with this tag will show up as that nickname when their messages and sent via relay channels. Their color and PFP will be removed as well. You can set per-channel nicknames using this format: `channelID:nickame,channelID:nickname`. Use commas to separate each nickname or channel-nickname pair, and colons to separate channel IDs from nicknames. You may have a nickname without a channelID specified, which will apply to all channels that don't have their own specific nickname.");
 		e.addField("extravotes <number>", "Tagged player's vote counts extra.");
+		e.addField("purged <true>", "Tagged player cannot be voted.");
 
 		UTILS.embed(chn, e);
 	});
