@@ -154,7 +154,7 @@ module.exports = (g) =>
 		});
 	});
 
-	register_cmd(["vote"], "<Player Name or Number>", "Vote for a player to be eliminated.", {adminOnly: false, minArgs: 1}, (chn, message, e, args) =>
+	register_cmd(["vote"], "<Player Name or Number>", "Vote", "Vote for a player to be eliminated.", {adminOnly: false, minArgs: 1}, (chn, message, e, args) =>
 	{
 		let pdata = SERVER_DATA[message.guild.id].players;
 		let sender = UTILS.getPlayerByID(pdata, message.member.id);
@@ -251,7 +251,7 @@ module.exports = (g) =>
 
 	});
 
-	register_cmd(["unvote"], "", "Remove your vote for a player to be eliminated.", {adminOnly: false, minArgs: 0}, (chn, message, e, args) => {
+	register_cmd(["unvote"], "", "Unvote", "Remove your vote for a player to be eliminated.", {adminOnly: false, minArgs: 0}, (chn, message, e, args) => {
 		let pdata = SERVER_DATA[message.guild.id].players;
 		let sender = UTILS.getPlayerByID(pdata, message.member.id);
 
@@ -303,7 +303,7 @@ module.exports = (g) =>
 
 	});
 
-	register_cmd(["votecount"], "", "Get the current votecount.", {adminOnly: false, minArgs: 0}, (chn, message, e, args) =>
+	register_cmd(["votecount"], "",  "Get Votecount", "Get the current votecount.", {adminOnly: false, minArgs: 0}, (chn, message, e, args) =>
 	{
 		let pdata = SERVER_DATA[message.guild.id].players;
 		let sender = UTILS.getPlayerByID(pdata, message.member.id);
