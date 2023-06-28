@@ -45,7 +45,7 @@ module.exports = (g) =>
 			meta,
 			func: (chn, message, e, args) =>
 			{
-				let id = message.guild.id;
+				let id = UTILS.category(message).id;
 
 				if(!SERVER_DATA[id])
 					SERVER_DATA[id] = {players: [], relay: []};
@@ -59,16 +59,16 @@ module.exports = (g) =>
 
 	register_cmd(["add_player", "addplayer"], "<Player ID> [Player Number] <#Player Channel> [Nickname(s)...]", "Add Player", "Add a player into the bot's local storage, enabling use with whispers and other features.\n\nIf you don't provide at least one nickname, the player's current display name will be used instead.\n\nYou may choose a specific number for this new player, inserting it into the list at that position. The previous player in that spot, as well as all players above, will be shifted upwards by 1 slot.", {adminOnly: true, minArgs: 2}, (chn, message, e, args) =>
 	{
-		let pdata = SERVER_DATA[message.guild.id].players;
-		let defaults = SERVER_DATA[message.guild.id].defaults;
+		let pdata = SERVER_DATA[UTILS.category(message).id].players;
+		let defaults = SERVER_DATA[UTILS.category(message).id].defaults;
 		let user_promise = message.guild.members.fetch(args[0]).catch(console.error);
-		let player_channel = message.guild.channels.cache.get(args[1].substring(2, args[1].length-1));
+		let player_channel = UTILS.categoryCache(message).get(args[1].substring(2, args[1].length-1));
 		let pnum = null;
 
 		if(UTILS.isInt(args[1]))
 		{
 			pnum = parseInt(args[1], 10);
-			player_channel = message.guild.channels.cache.get(args[2].substring(2, args[2].length-1));
+			player_channel = UTILS.categoryCache(message).get(args[2].substring(2, args[2].length-1));
 
 			if(pnum <= 0)
 			{
@@ -156,7 +156,7 @@ module.exports = (g) =>
 
 	register_cmd(["vote"], "<Player Name or Number>", "Vote", "Vote for a player to be eliminated.", {adminOnly: false, minArgs: 1}, (chn, message, e, args) =>
 	{
-		let pdata = SERVER_DATA[message.guild.id].players;
+		let pdata = SERVER_DATA[UTILS.category(message).id].players;
 		let sender = UTILS.getPlayerByID(pdata, message.member.id);
 
 		if(!sender)
@@ -177,7 +177,7 @@ module.exports = (g) =>
 			return;
 		}
 
-		if(!is_day(message.guild.id))
+		if(!is_day(UTILS.category(message).id))
 		{
 			UTILS.msg(chn, "-ERROR: You cannot vote right now.");
 			return;
@@ -241,7 +241,7 @@ module.exports = (g) =>
 
 		if(sender.tags.announce)
 		{
-			let announce = message.guild.channels.cache.get(sender.tags.announce.substring(2, sender.tags.announce.length-1))
+			let announce = UTILS.categoryCache(message).get(sender.tags.announce.substring(2, sender.tags.announce.length-1))
 
 			if(announce)
 				UTILS.msg(announce, firstname(sender) + " voted for " + firstname(recipient) + ".", true);
@@ -252,7 +252,7 @@ module.exports = (g) =>
 	});
 
 	register_cmd(["unvote"], "", "Unvote", "Remove your vote for a player to be eliminated.", {adminOnly: false, minArgs: 0}, (chn, message, e, args) => {
-		let pdata = SERVER_DATA[message.guild.id].players;
+		let pdata = SERVER_DATA[UTILS.category(message).id].players;
 		let sender = UTILS.getPlayerByID(pdata, message.member.id);
 
 		if (!sender) {
@@ -270,7 +270,7 @@ module.exports = (g) =>
 			return;
 		}
 
-		if (!is_day(message.guild.id)) {
+		if (!is_day(UTILS.category(message).id)) {
 			UTILS.msg(chn, "-ERROR: You cannot vote right now.");
 			return;
 		}
@@ -289,7 +289,7 @@ module.exports = (g) =>
 
 			if(sender.tags.announce)
 			{
-				let announce = message.guild.channels.cache.get(sender.tags.announce.substring(2, sender.tags.announce.length-1))
+				let announce = UTILS.categoryCache(message).get(sender.tags.announce.substring(2, sender.tags.announce.length-1))
 
 				if(announce)
 					UTILS.msg(announce, firstname(sender) + " unvoted.", true);
@@ -305,7 +305,7 @@ module.exports = (g) =>
 
 	register_cmd(["votecount"], "",  "Get Votecount", "Get the current votecount.", {adminOnly: false, minArgs: 0}, (chn, message, e, args) =>
 	{
-		let pdata = SERVER_DATA[message.guild.id].players;
+		let pdata = SERVER_DATA[UTILS.category(message).id].players;
 		let sender = UTILS.getPlayerByID(pdata, message.member.id);
 		let announce = null;
 
@@ -317,7 +317,7 @@ module.exports = (g) =>
 
 		if(sender.tags.announce)
 		{
-			announce = message.guild.channels.cache.get(sender.tags.announce.substring(2, sender.tags.announce.length-1));
+			announce = UTILS.categoryCache(message).get(sender.tags.announce.substring(2, sender.tags.announce.length-1));
 		}
 
 		if(chn.id !== sender.channel && (!announce || chn.id !== announce.id))
@@ -332,7 +332,7 @@ module.exports = (g) =>
 			return;
 		}
 
-		if(!is_day(message.guild.id))
+		if(!is_day(UTILS.category(message).id))
 		{
 			UTILS.msg(chn, "-ERROR: You can only request the votecount during the day.");
 			return;
@@ -405,7 +405,7 @@ module.exports = (g) =>
 
 	register_cmd(["del_player", "delplayer"], "<Player Name or Number or *>", "Delete Player", "Remove a player from the bot's local storage.", {adminOnly: true, minArgs: 1}, (chn, message, e, args) =>
 	{
-		let pdata = SERVER_DATA[message.guild.id].players;
+		let pdata = SERVER_DATA[UTILS.category(message).id].players;
 		let players = (args[0] === "*" ? Object.keys(pdata) : [args[0]]);
 		let output = "";
 
@@ -449,7 +449,7 @@ module.exports = (g) =>
 
 	register_cmd(["view_players", "viewplayers", "players"], "", "View Players", "Display the current data of registered players.\n\n**Warning, this can reveal meta info if used in public channels.**", {adminOnly: true}, (chn, message, e, args) =>
 	{
-		let pdata = SERVER_DATA[message.guild.id].players;
+		let pdata = SERVER_DATA[UTILS.category(message).id].players;
 
 		if(pdata.length === 0)
 		{
@@ -457,7 +457,12 @@ module.exports = (g) =>
 			return;
 		}
 
-		e.setAuthor({name: "Player Data (" + message.guild.name + ")"});
+		let owner = message.guild.name;
+
+		if(message.channel.parent)
+			owner += " <" + (message.channel.parent.parent ? message.channel.parent.parent.name : message.channel.parent.name) + ">";
+
+		e.setAuthor({name: "Player Data (" + owner + ")"});
 		e.setColor("#0000FF");
 
 		for(let i = 0; i < pdata.length; i++)
@@ -496,9 +501,9 @@ module.exports = (g) =>
 
 	register_cmd(["toggle_day", "toggleday"], "", "Toggle Day", "Toggle between Night and Day, determining if whispers are allowed or not.", {adminOnly: true}, (chn, message, e, args) =>
 	{
-		toggle_day(message.guild.id);
+		toggle_day(UTILS.category(message).id);
 
-		if(is_day(message.guild.id))
+		if(is_day(UTILS.category(message).id))
 			UTILS.msg(chn, "+It is now Day.");
 		else
 			UTILS.msg(chn, "-It is now Night.");
@@ -508,7 +513,7 @@ module.exports = (g) =>
 
 	register_cmd(["is_day", "isday"], "", "Is Day", "Check if it's current Day or not in the bot.", (chn, message, e, args) =>
 	{
-		if(is_day(message.guild.id))
+		if(is_day(UTILS.category(message).id))
 			UTILS.msg(chn, "+It is currently Day.");
 		else
 			UTILS.msg(chn, "-It is currently Night.");
@@ -516,7 +521,7 @@ module.exports = (g) =>
 
 	register_cmd(["toggle_alive", "togglealive"], "<Player Name or Number>", "Toggle alive", "Toggle between a player's status as Alive or Dead, determining if whispers are allowed or not.", {adminOnly: true, minArgs: 1}, (chn, message, e, args) =>
 	{
-		let pdata = SERVER_DATA[message.guild.id].players;
+		let pdata = SERVER_DATA[UTILS.category(message).id].players;
 
 		let player = UTILS.isInt(args[0])
 			? pdata[parseInt(args[0])-1]
@@ -543,7 +548,7 @@ module.exports = (g) =>
 	register_cmd("whisper", "<Player Name or Number> <Message>", "Whisper", "Whisper to a player of your choice. You may whisper them by their name or Player Number.\n\nThis command can only be used within your own player channel.", {minArgs: 2}, (chn, message, e, args) =>
 	{
 		const SENT = "+Sent!";
-		let pdata = SERVER_DATA[message.guild.id].players;
+		let pdata = SERVER_DATA[UTILS.category(message).id].players;
 		let sender = UTILS.getPlayerByID(pdata, message.member.id);
 
 		if(!sender)
@@ -564,7 +569,7 @@ module.exports = (g) =>
 			return;
 		}
 
-		if(!is_day(message.guild.id) || sender.tags.mute)
+		if(!is_day(UTILS.category(message).id) || sender.tags.mute)
 		{
 			UTILS.msg(chn, "-ERROR: You cannot use whispers right now.");
 			return;
@@ -621,7 +626,7 @@ module.exports = (g) =>
 			return;
 		}
 
-		let rchannel = message.guild.channels.cache.get(recipient.channel);
+		let rchannel = UTILS.categoryCache(message).get(recipient.channel);
 
 		if(!rchannel)
 		{
@@ -645,7 +650,7 @@ module.exports = (g) =>
 		{
 			if(sender.tags.announce === sender.tags.relay)
 			{
-				let relay = message.guild.channels.cache.get(sender.tags.relay.substring(2, sender.tags.relay.length-1))
+				let relay = UTILS.categoryCache(message).get(sender.tags.relay.substring(2, sender.tags.relay.length-1))
 
 				if(relay)
 					UTILS.msg(relay, firstname(sender) + " whispered to " + firstname(recipient) + ": " + whisper, true);
@@ -656,7 +661,7 @@ module.exports = (g) =>
 			{
 				if(sender.tags.announce)
 				{
-					let announce = message.guild.channels.cache.get(sender.tags.announce.substring(2, sender.tags.announce.length-1))
+					let announce = UTILS.categoryCache(message).get(sender.tags.announce.substring(2, sender.tags.announce.length-1))
 
 				if(announce)
 					UTILS.msg(announce, firstname(sender) + " whispered to " + firstname(recipient) + ".", true);
@@ -665,7 +670,7 @@ module.exports = (g) =>
 				}
 				else
 				{
-					let relay = message.guild.channels.cache.get(sender.tags.relay.substring(2, sender.tags.relay.length-1))
+					let relay = UTILS.categoryCache(message).get(sender.tags.relay.substring(2, sender.tags.relay.length-1))
 
 					if(relay)
 						UTILS.msg(relay, "Someone whispered to someone: " + whisper, true);
@@ -686,7 +691,7 @@ module.exports = (g) =>
 						commaCheck(UTILS, plr.tags.overhear_target, sender.num) || 
 						commaCheck(UTILS, plr.tags.overhear_target, recipient.num)))
 				{
-					let pchannel = message.guild.channels.cache.get(plr.channel);
+					let pchannel = UTILS.categoryCache(message).get(plr.channel);
 
 					UTILS.msg(pchannel, "Whisper from " + firstname(sender) + " to " + firstname(recipient) + ": " + whisper, true);
 				}
@@ -696,7 +701,7 @@ module.exports = (g) =>
 
 	register_cmd("tag", "<Player Name or Number or *> <Key> [Value]", "Tag", "Give a player a Tag, a type of variable related to gameplay.\n\nUse * to set a tag for every single player instead.\n\nTo check what a Tag currently is, use this command without providing a Value.\n\nTo remove a Tag, use this command with the Value set to \"-\" (without the quotes).\n\nTo list usable tags, use the =tags command.", {adminOnly: true, minArgs: 2}, (chn, message, e, args) =>
 	{
-		let pdata = SERVER_DATA[message.guild.id].players;
+		let pdata = SERVER_DATA[UTILS.category(message).id].players;
 		let players = (args[0] === "*" ? Object.keys(pdata) : [args[0]]);
 		let output = "";
 
@@ -751,13 +756,13 @@ module.exports = (g) =>
 
 	register_cmd(["tag_default", "tagdefault", "default"], "<Key> [Value]", "Tag Default", "Set a default tag value. This will be applied to future added players, but not to ones that already exist.\n\nTo check what a Tag's default currently is, use this command without providing a Value.\n\nTo check all Default Tags, use the =tag_defaults command.\n\nTo remove a Tag, use this command with the Value set to \"-\" (without the quotes).\n\nTo list usable tags, use the =tags command.", {adminOnly: true, minArgs: 1}, (chn, message, e, args) =>
 	{
-		let defaults = SERVER_DATA[message.guild.id].defaults;
+		let defaults = SERVER_DATA[UTILS.category(message).id].defaults;
 		let value = args[1] || "";
 
 		if(!defaults)
 		{
-			SERVER_DATA[message.guild.id].defaults = {};
-			defaults = SERVER_DATA[message.guild.id].defaults;
+			SERVER_DATA[UTILS.category(message).id].defaults = {};
+			defaults = SERVER_DATA[UTILS.category(message).id].defaults;
 		}
 
 		for(let n = 2; n < args.length; n++)
@@ -781,7 +786,7 @@ module.exports = (g) =>
 
 	register_cmd(["tag_defaults", "tagdefaults", "defaults"], "", "Tag Defaults", "List all default tags which are applied to newly registered players.", (chn, message, e, args) =>
 	{
-		let defaults = SERVER_DATA[message.guild.id].defaults;
+		let defaults = SERVER_DATA[UTILS.category(message).id].defaults;
 
 		if(!defaults || Object.keys(defaults).length === 0)
 		{
@@ -819,12 +824,12 @@ module.exports = (g) =>
 
 	register_cmd(["add_relay", "addrelay", "relay"], "<#Input> <#output> [twoWay?]", "Add Relay", "Create a relay from one channel to another.\n\nIf a third parameter is provided, a second relay will be created, to send messages in #output back to #input.\n\nDon't worry, relayed messages won't be relayed in an infinite loop.", {adminOnly: true, minArgs: 2}, (chn, message, e, args) =>
 	{
-		let rdata = SERVER_DATA[message.guild.id].relay;
+		let rdata = SERVER_DATA[UTILS.category(message).id].relay;
 		let inp = args[0].substring(2, args[0].length-1);
 		let out = args[1].substring(2, args[1].length-1);
 
-		let input = message.guild.channels.cache.get(inp);
-		let output = message.guild.channels.cache.get(out);
+		let input = UTILS.categoryCache(message).get(inp);
+		let output = UTILS.categoryCache(message).get(out);
 
 		if(!input || !output)
 		{
@@ -846,7 +851,7 @@ module.exports = (g) =>
 
 	register_cmd(["list_relays", "listrelays", "list_relay", "listrelay", "relays"], "", "List Relays", "List all currently active channel relays. Be careful not to use this in a publicly available channel, or you might modconfirm the existence of a secret chat.", {adminOnly: true}, (chn, message, e, args) =>
 	{
-		let rdata = SERVER_DATA[message.guild.id].relay;
+		let rdata = SERVER_DATA[UTILS.category(message).id].relay;
 
 		if(rdata.length === 0)
 		{
@@ -864,7 +869,7 @@ module.exports = (g) =>
 
 	register_cmd(["del_relay", "delrelay"], "<Number 1> [Number 2] [Number N]...", "Relay", "Delete a given relay, or list of relays. Use =list_relays to check each relay's number.\n\nNegative and non-integer values will not delete anything.", {adminOnly: true, minArgs: 1}, (chn, message, e, args) =>
 	{
-		let rdata = SERVER_DATA[message.guild.id].relay;
+		let rdata = SERVER_DATA[UTILS.category(message).id].relay;
 		let newrelay = [];
 		let output = "";
 

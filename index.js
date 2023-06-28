@@ -396,23 +396,23 @@ bot.on("ready", () =>
 
 bot.on("messageCreate", (message) =>
 {
-	let data = SERVER_DATA[message.guild.id];
+	let data = SERVER_DATA[UTILS.category(message).id];
 
 	if(data)
 	{
 		for(let i = 0; i < data.relay.length; i++)
 		{
-			let ch1 = message.guild.channels.cache.get(data.relay[i].inp);
+			let ch1 = UTILS.categoryCache(message).get(data.relay[i].inp);
 
 			if(ch1 && ch1.id === message.channel.id)
 			{
-				let ch2 = message.guild.channels.cache.get(data.relay[i].out);
+				let ch2 = UTILS.categoryCache(message).get(data.relay[i].out);
 
 				if(ch2 && (message.member.user.id !== bot.user.id || message.embeds.length === 0 || !message.embeds[0].timestamp))
 				{
 					let addedText = "";
 					let output = new MessageEmbed();
-					let sender = UTILS.getPlayerByID(SERVER_DATA[message.guild.id].players, message.author.id);
+					let sender = UTILS.getPlayerByID(SERVER_DATA[UTILS.category(message).id].players, message.author.id);
 
 					if(sender && sender.tags.relay_nick)
 					{

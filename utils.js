@@ -163,6 +163,28 @@ module.exports = (g) =>
 				return players[i]
 	}
 
+	UTILS.categoryCache = (message) => {
+		return message.guild.channels.cache.filter(
+			(channel) => channel.parentId === UTILS.category(message).id && channel.type !== 'category'
+		);
+	}
+
+	UTILS.category = (source) =>
+	{
+		if(source.channel.isThread())
+		{
+			if(source.channel.parent.parent)
+				return source.channel.parent.parent;
+		}
+		else
+		{
+			if(source.channel.parent)
+				return source.channel.parent;
+		}
+
+		return source.guild;
+	}
+
 	UTILS.isInt = (v) =>
 	{
 		if(typeof v !== "string")
